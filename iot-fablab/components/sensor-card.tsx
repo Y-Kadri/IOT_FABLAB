@@ -4,10 +4,11 @@ import {
   Activity,
   Wind,
   Volume2,
+  Droplets,
 } from "lucide-react"
 
 interface SensorCardProps {
-  type: "temperature" | "motion" | "air" | "decibels"
+  type: "temperature" | "motion" | "air" | "decibels" | "humidity"
   value: number | boolean | string
   unit?: string
   label: string
@@ -19,6 +20,7 @@ const icons = {
   motion: Activity,
   air: Wind,
   decibels: Volume2,
+  humidity: Droplets,
 }
 
 const colors = {
@@ -26,6 +28,7 @@ const colors = {
   motion: "text-primary",
   air: "text-chart-3",
   decibels: "text-chart-5",
+  humidity: "text-chart-1",
 }
 
 export function SensorCard({ type, value, unit, label, className }: SensorCardProps) {

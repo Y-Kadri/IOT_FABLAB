@@ -1,11 +1,7 @@
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
-import { SensorCard } from "@/components/sensor-card"
-import { ZoneSummaryCard } from "@/components/zone-summary-card"
-import { zonesData, getAverages } from "@/lib/zones-data"
+import { DashboardContent } from "@/components/dashboard-content"
 
 export default function HomePage() {
-  const averages = getAverages()
-
   return (
     <div className="flex min-h-screen min-h-dvh bg-background">
       <DashboardSidebar />
@@ -17,35 +13,7 @@ export default function HomePage() {
             <span className="text-xs text-muted-foreground">En direct</span>
           </div>
         </header>
-
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-          <SensorCard
-            type="temperature"
-            value={averages.temperature}
-            unit="°C"
-            label="Temperature Moyenne"
-          />
-          <SensorCard
-            type="motion"
-            value={`${averages.motionZones}/3`}
-            label="Zones Actives"
-          />
-          <SensorCard
-            type="air"
-            value={averages.airQuality}
-            unit="%"
-            label="Qualite Air Moyenne"
-          />
-        </section>
-
-        <section className="flex-1 flex flex-col gap-2 overflow-hidden">
-          <h2 className="text-sm font-semibold text-muted-foreground">Zones</h2>
-          <div className="flex flex-col gap-2 overflow-auto">
-            {zonesData.map((zone) => (
-              <ZoneSummaryCard key={zone.id} zone={zone} />
-            ))}
-          </div>
-        </section>
+        <DashboardContent />
       </main>
     </div>
   )
