@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes.sensors import router as sensor_router
+from app.routes.events import router as events_router
 from app.database import engine
 from sqlalchemy import text
 
@@ -8,7 +8,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
-app.include_router(sensor_router)
+app.include_router(events_router)
 
 @app.get("/")
 def health():
