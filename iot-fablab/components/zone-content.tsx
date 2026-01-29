@@ -15,11 +15,11 @@ interface ZoneContentProps {
 function getDefaultData(zone: Zone): ZoneData {
   return {
     zone,
-    temperature: { value: 0, unit: "C", timestamp: new Date() },
-    airQuality: { value: 0, unit: "%", timestamp: new Date() },
-    humidity: { value: 0, unit: "%", timestamp: new Date() },
-    movement: { detected: false, timestamp: new Date() },
-    sound: zone === Zone.CARPENTRY ? { value: 0, unit: "dB", timestamp: new Date() } : undefined,
+    temperature: { value: 0, unit: "C", datereceive: new Date() },
+    airQuality: { value: 0, unit: "%", datereceive: new Date() },
+    humidity: { value: 0, unit: "%", datereceive: new Date() },
+    movement: { detected: false, datereceive: new Date() },
+    sound: zone === Zone.CARPENTRY ? { value: 0, unit: "dB", datereceive: new Date() } : undefined,
   }
 }
 
@@ -89,7 +89,7 @@ export function ZoneContent({ zone }: ZoneContentProps) {
         <div className="flex gap-2 text-xs text-muted-foreground">
           <span>Derniere mise a jour:</span>
           <span className="text-foreground">
-            {new Date(zoneData.temperature.timestamp).toLocaleTimeString("fr-FR")}
+            {new Date(zoneData.temperature.datereceive).toLocaleTimeString("fr-FR")}
           </span>
         </div>
       </footer>
