@@ -12,6 +12,8 @@ from app.models import (
     HumidityData
 )
 from app.DTO.eventsDTO import EventCreate
+from app.DTO.eventStats import EventStats
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -147,3 +149,27 @@ async def get_last_event_by_zone(
         "noise": noise.noise if noise else None,
         "noise_date": noise.datereceive if noise else None,
     }
+    
+
+@router.get("/stats", response_model=EventStats)
+async def get_event_stats(session: AsyncSession = Depends(get_session)):
+    temp_avg = await session.execute(
+        func.avg(TemperatureData.temperature)
+    )
+    average_temperature = temp_avg.scalar()
+
+    humidity_avg = await session.execute(
+        func.avg(HumidityData.humidity)
+    )
+    average_humidity = humidity_avg.scalar()
+
+    total_movement_res = await session.execute(
+        func.count(MovementData.id_movement)
+    )
+    total_movements = total_movement_res.scalar()
+
+    return EventStats(
+        average_temperature=average_temperature,
+        average_humidity=average_humidity,
+        total_movements=total_movements
+    )

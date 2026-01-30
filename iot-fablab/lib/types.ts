@@ -59,18 +59,9 @@ export interface ZoneData {
   sound?: Sound
 }
 
-// Reponses API agregees
-export interface AvgTemperatureResponse {
-  average: number
-  unit: "C" | "F"
-}
-
-export interface AvgAirQualityResponse {
-  average: number
-  unit: "ppm" | "%"
-}
-
-export interface MovementCountResponse {
-  count: number
-  total: number
+// Reponse API stats agregees
+export interface StatsResponse {
+  average_temperature: number | null
+  average_humidity: number | null
+  total_movements: number
 }

@@ -2,9 +2,7 @@ import { Zone } from "./zones.enum"
 import type {
   ZoneData,
   ApiZoneResponse,
-  AvgTemperatureResponse,
-  AvgHumidityResponse,
-  MovementCountResponse,
+  StatsResponse,
 } from "./types"
 import { toast } from "@/hooks/use-toast"
 
@@ -23,16 +21,8 @@ function getDefaultZoneData(zone: Zone): ZoneData {
   }
 }
 
-function getDefaultAvgTemperature(): AvgTemperatureResponse {
-  return { average: 0, unit: "C" }
-}
-
-function getDefaultAvgHumidity(): AvgHumidityResponse {
-  return { average: 0, unit: "%" }
-}
-
-function getDefaultMovementCount(): MovementCountResponse {
-  return { count: 0, total: 3 }
+function getDefaultStats(): StatsResponse {
+  return { average_temperature: null, average_humidity: null, total_movements: 0 }
 }
 
 // Affiche un toast d'erreur
@@ -93,48 +83,18 @@ export async function getLastDataByZone(zone: Zone): Promise<ZoneData> {
   }
 }
 
-// Recupere la temperature moyenne de toutes les zones
-export async function getAvgTemperature(): Promise<AvgTemperatureResponse> {
+// Recupere les statistiques agregees (temperature moyenne, humidite moyenne, total mouvements)
+export async function getStats(): Promise<StatsResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/sensors/temperature/average`)
+    const response = await fetch(`${API_BASE_URL}/events/stats`)
     if (!response.ok) {
-      showErrorToast("Impossible de recuperer la temperature moyenne")
-      return getDefaultAvgTemperature()
+      showErrorToast("Impossible de recuperer les statistiques")
+      return getDefaultStats()
     }
     return response.json()
   } catch {
-    showErrorToast("Impossible de recuperer la temperature moyenne")
-    return getDefaultAvgTemperature()
-  }
-}
-
-// Recupere l'humidite moyenne de toutes les zones
-export async function getAvgHumidity(): Promise<AvgHumidityResponse> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/sensors/humidity/average`)
-    if (!response.ok) {
-      showErrorToast("Impossible de recuperer l'humidite moyenne")
-      return getDefaultAvgHumidity()
-    }
-    return response.json()
-  } catch {
-    showErrorToast("Impossible de recuperer l'humidite moyenne")
-    return getDefaultAvgHumidity()
-  }
-}
-
-// Recupere le nombre de zones avec mouvement detecte
-export async function getActualNbMovement(): Promise<MovementCountResponse> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/sensors/movement/count`)
-    if (!response.ok) {
-      showErrorToast("Impossible de recuperer le nombre de mouvements")
-      return getDefaultMovementCount()
-    }
-    return response.json()
-  } catch {
-    showErrorToast("Impossible de recuperer le nombre de mouvements")
-    return getDefaultMovementCount()
+    showErrorToast("Impossible de recuperer les statistiques")
+    return getDefaultStats()
   }
 }
 
@@ -147,19 +107,16 @@ export async function getAllZonesData(): Promise<ZoneData[]> {
 
 // Recupere les donnees agregees pour la vue generale
 export async function getDashboardData() {
-  const [avgTemp, avgHumidity, movementCount, zonesData] = await Promise.all([
-    getAvgTemperature(),
-    getAvgHumidity(),
-    getActualNbMovement(),
+  const [stats, zonesData] = await Promise.all([
+    getStats(),
     getAllZonesData(),
   ])
 
   return {
     averages: {
-      temperature: avgTemp.average,
-      humidity: avgHumidity.average,
-      motionZones: movementCount.count,
-      totalZones: movementCount.total,
+      temperature: stats.average_temperature,
+      humidity: stats.average_humidity,
+      totalMovements: stats.total_movements,
     },
     zones: zonesData,
   }
