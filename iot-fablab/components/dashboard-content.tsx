@@ -22,29 +22,35 @@ export function DashboardContent() {
   }
 
   // Valeurs par defaut si pas de donnees
-  const averages = data?.averages ?? { temperature: 0, airQuality: 0, motionZones: 0, totalZones: 3 }
+  const averages = data?.averages ?? { temperature: null, humidity: null, totalMovements: 0 }
   const zonesData = data?.zones ?? []
   const zones = Object.values(Zone)
+
+  // Formatage avec gestion null/undefined -> "-"
+  const formatAverage = (value: number | null | undefined, decimals = 0): string => {
+    if (value === null || value === undefined) return "-"
+    return decimals > 0 ? value.toFixed(decimals) : value.toString()
+  }
 
   return (
     <>
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
         <SensorCard
           type="temperature"
-          value={averages.temperature.toFixed(1)}
+          value={formatAverage(averages.temperature, 1)}
           unit="°C"
           label="Temperature Moyenne"
         />
         <SensorCard
-          type="motion"
-          value={`${averages.motionZones}/${averages.totalZones}`}
-          label="Zones Actives"
+          type="humidity"
+          value={formatAverage(averages.humidity)}
+          unit="%"
+          label="Humidite Moyenne"
         />
         <SensorCard
-          type="air"
-          value={averages.airQuality.toFixed(0)}
-          unit="%"
-          label="Qualite Air Moyenne"
+          type="motion"
+          value={averages.totalMovements}
+          label="Mouvements Detectes"
         />
       </section>
 

@@ -1,31 +1,31 @@
-import { notFound } from "next/navigation"
-import Link from "next/link"
-import { DashboardSidebar } from "@/components/dashboard-sidebar"
-import { ZoneContent } from "@/components/zone-content"
-import { Zone, ZoneSlugs, ZoneLabels, getZoneFromSlug } from "@/lib/zones.enum"
-import { ArrowLeft } from "lucide-react"
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
+import { ZoneContent } from "@/components/zone-content";
+import { Zone, ZoneSlugs, ZoneLabels, getZoneFromSlug } from "@/lib/zones.enum";
+import { ArrowLeft } from "lucide-react";
 
 interface ZonePageProps {
   params: Promise<{
-    slug: string
-  }>
+    slug: string;
+  }>;
 }
 
 export function generateStaticParams() {
   return Object.values(Zone).map((zone) => ({
     slug: ZoneSlugs[zone],
-  }))
+  }));
 }
 
 export default async function ZonePage({ params }: ZonePageProps) {
-  const { slug } = await params
-  const zone = getZoneFromSlug(slug)
+  const { slug } = await params;
+  const zone = getZoneFromSlug(slug);
 
   if (!zone) {
-    notFound()
+    notFound();
   }
 
-  const label = ZoneLabels[zone]
+  const label = ZoneLabels[zone];
 
   return (
     <div className="flex min-h-screen min-h-dvh bg-background">
@@ -42,15 +42,13 @@ export default async function ZonePage({ params }: ZonePageProps) {
             <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">
               {label}
             </h1>
-            <p className="text-xs text-muted-foreground">Donnees en temps reel</p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs text-muted-foreground hidden sm:inline">En direct</span>
+            <p className="text-xs text-muted-foreground">
+              Donnees en temps reel
+            </p>
           </div>
         </header>
         <ZoneContent zone={zone} />
       </main>
     </div>
-  )
+  );
 }
