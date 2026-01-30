@@ -1,43 +1,55 @@
+// Reponse brute de l'API backend
 export interface ApiZoneResponse {
-  humidity: number
-  temperature: number
-  movement: boolean
-  datereceive: string
-  id_zone: number
-  airquality: number
-  id_value: number
-  noise: number
+  zone: string
+
+  temperature: number | null
+  temperature_date: string | null
+
+  humidity: number | null
+  humidity_date: string | null
+
+  gasconcentration: number | null
+  gas_date: string | null
+
+  movement: boolean | null
+  movement_date: string | null
+
+  noise: number | null
+  noise_date: string | null
 }
 
+
+// Modeles de donnees capteurs (format front)
 export interface Temperature {
-  value: number
+  value: number | null
   unit: "C" | "F"
-  timestamp: Date
+  datereceive: Date | null
 }
 
 export interface AirQuality {
-  value: number
+  value: number | null
   unit: "ppm" | "%"
-  timestamp: Date
+  datereceive: Date | null
 }
 
 export interface Humidity {
-  value: number
+  value: number | null
   unit: "%"
-  timestamp: Date
+  datereceive: Date | null
 }
 
 export interface Movement {
-  detected: boolean
-  timestamp: Date
+  detected: boolean | null
+  datereceive: Date | null
 }
 
 export interface Sound {
-  value: number
+  value: number | null
   unit: "dB"
-  timestamp: Date
+  datereceive: Date | null
 }
 
+// Donnees completes d'une zone (format front)
 export interface ZoneData {
   zone: string
   temperature: Temperature
@@ -47,6 +59,7 @@ export interface ZoneData {
   sound?: Sound
 }
 
+// Reponses API agregees
 export interface AvgTemperatureResponse {
   average: number
   unit: "C" | "F"

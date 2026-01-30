@@ -7,7 +7,7 @@ import { LayoutDashboard, Hammer, Cpu, Zap } from "lucide-react";
 
 const navItems = [
   {
-    name: "Vue Générale",
+    name: "Vue Generale",
     shortName: "Accueil",
     href: "/",
     icon: LayoutDashboard,
@@ -19,8 +19,8 @@ const navItems = [
     icon: Hammer,
   },
   {
-    name: "Électronique",
-    shortName: "Électro",
+    name: "Electronique",
+    shortName: "Electro",
     href: "/zone/electronique-soudure",
     icon: Cpu,
   },
@@ -38,7 +38,7 @@ export function DashboardSidebar() {
   return (
     <>
       {/* Sidebar desktop/tablet */}
-      <aside className="hidden sm:flex  w-20 lg:w-24 flex-col bg-sidebar border-r border-sidebar-border shrink-0">
+      <aside className="hidden sm:flex w-20 lg:w-24 flex-col bg-sidebar border-r border-sidebar-border shrink-0">
         <div className="flex h-14 items-center justify-center border-b border-sidebar-border">
           <span className="text-lg font-bold text-primary">IoT</span>
         </div>

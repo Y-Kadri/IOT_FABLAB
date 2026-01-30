@@ -15,11 +15,11 @@ interface ZoneContentProps {
 function getDefaultData(zone: Zone): ZoneData {
   return {
     zone,
-    temperature: { value: 0, unit: "C", datereceive: new Date() },
-    airQuality: { value: 0, unit: "%", datereceive: new Date() },
-    humidity: { value: 0, unit: "%", datereceive: new Date() },
-    movement: { detected: false, datereceive: new Date() },
-    sound: zone === Zone.CARPENTRY ? { value: 0, unit: "dB", datereceive: new Date() } : undefined,
+    temperature: { value: null, unit: "C", datereceive: null },
+    airQuality: { value: null, unit: "%", datereceive: null },
+    humidity: { value: null, unit: "%", datereceive: null },
+    movement: { detected: null, datereceive: null },
+    sound: zone === Zone.CARPENTRY ? { value: null, unit: "dB", datereceive: null } : undefined,
   }
 }
 
@@ -47,52 +47,59 @@ export function ZoneContent({ zone }: ZoneContentProps) {
   // Utilise les donnees ou les valeurs par defaut
   const zoneData = data ?? getDefaultData(zone)
 
+  // Formatage des valeurs avec gestion null -> "-"
+  const formatValue = (value: number | null, decimals = 0): string => {
+    if (value === null) return "-"
+    return decimals > 0 ? value.toFixed(decimals) : value.toString()
+  }
+
+  const formatDate = (date: Date | null): string => {
+    if (!date) return "-"
+    return new Date(date).toLocaleTimeString("fr-FR")
+  }
+
   return (
     <>
       <section className={`grid gap-2 sm:gap-3 flex-1 ${hasSound || hasntAirQuality ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-3"}`}>
         <SensorCard
           type="temperature"
-          value={zoneData.temperature.value.toFixed(1)}
+          value={formatValue(zoneData.temperature.value, 1)}
           unit="°C"
           label="Temperature"
+          datereceive={zoneData.temperature.datereceive}
         />
         <SensorCard
           type="motion"
           value={zoneData.movement.detected}
           label="Mouvement Detecte"
+          datereceive={zoneData.movement.datereceive}
         />
         {hasntAirQuality && (
             <SensorCard
             type="air"
-            value={zoneData.airQuality.value.toFixed(0)}
+            value={formatValue(zoneData.airQuality.value)}
             unit="%"
             label="Qualite de l'Air"
+            datereceive={zoneData.airQuality.datereceive}
             />
         )}
         <SensorCard
           type="humidity"
-          value={zoneData.humidity.value.toFixed(0)}
+          value={formatValue(zoneData.humidity.value)}
           unit="%"
           label="Humidite"
+          datereceive={zoneData.humidity.datereceive}
         />
         {hasSound && zoneData.sound && (
           <SensorCard
             type="decibels"
-            value={zoneData.sound.value.toFixed(0)}
+            value={formatValue(zoneData.sound.value)}
             unit="dB"
             label="Niveau Sonore"
+            datereceive={zoneData.sound.datereceive}
           />
         )}
       </section>
-
-      <footer className="flex justify-center">
-        <div className="flex gap-2 text-xs text-muted-foreground">
-          <span>Derniere mise a jour:</span>
-          <span className="text-foreground">
-            {new Date(zoneData.temperature.datereceive).toLocaleTimeString("fr-FR")}
-          </span>
-        </div>
-      </footer>
     </>
   )
 }

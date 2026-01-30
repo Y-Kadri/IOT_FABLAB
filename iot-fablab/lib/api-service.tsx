@@ -3,7 +3,7 @@ import type {
   ZoneData,
   ApiZoneResponse,
   AvgTemperatureResponse,
-  AvgAirQualityResponse,
+  AvgHumidityResponse,
   MovementCountResponse,
 } from "./types"
 import { toast } from "@/hooks/use-toast"
@@ -15,11 +15,11 @@ const API_BASE_URL = "http://localhost:8000"
 function getDefaultZoneData(zone: Zone): ZoneData {
   return {
     zone,
-    temperature: { value: 0, unit: "C", timestamp: new Date() },
-    airQuality: { value: 0, unit: "%", timestamp: new Date() },
-    humidity: { value: 0, unit: "%", timestamp: new Date() },
-    movement: { detected: false, timestamp: new Date() },
-    sound: zone === Zone.CARPENTRY ? { value: 0, unit: "dB", timestamp: new Date() } : undefined,
+    temperature: { value: null, unit: "C", datereceive: null },
+    airQuality: { value: null, unit: "%", datereceive: null },
+    humidity: { value: null, unit: "%", datereceive: null },
+    movement: { detected: null, datereceive: null },
+    sound: zone === Zone.CARPENTRY ? { value: null, unit: "dB", datereceive: null } : undefined,
   }
 }
 
@@ -27,7 +27,7 @@ function getDefaultAvgTemperature(): AvgTemperatureResponse {
   return { average: 0, unit: "C" }
 }
 
-function getDefaultAvgAirQuality(): AvgAirQualityResponse {
+function getDefaultAvgHumidity(): AvgHumidityResponse {
   return { average: 0, unit: "%" }
 }
 
@@ -46,14 +46,32 @@ function showErrorToast(message: string) {
 
 // Transforme la reponse API en format front
 function mapApiResponseToZoneData(zone: Zone, apiData: ApiZoneResponse): ZoneData {
-  const timestamp = new Date(apiData.datereceive)
   return {
     zone,
-    temperature: { value: apiData.temperature, unit: "C", timestamp },
-    airQuality: { value: apiData.airquality, unit: "%", timestamp },
-    humidity: { value: apiData.humidity, unit: "%", timestamp },
-    movement: { detected: apiData.movement, timestamp },
-    sound: zone === Zone.CARPENTRY ? { value: apiData.noise, unit: "dB", timestamp } : undefined,
+    temperature: { 
+      value: apiData.temperature, 
+      unit: "C", 
+      datereceive: apiData.temperature_date ? new Date(apiData.temperature_date) : null 
+    },
+    airQuality: { 
+      value: apiData.gasconcentration, 
+      unit: "%", 
+      datereceive: apiData.gas_date ? new Date(apiData.gas_date) : null 
+    },
+    humidity: { 
+      value: apiData.humidity, 
+      unit: "%", 
+      datereceive: apiData.humidity_date ? new Date(apiData.humidity_date) : null 
+    },
+    movement: { 
+      detected: apiData.movement, 
+      datereceive: apiData.movement_date ? new Date(apiData.movement_date) : null 
+    },
+    sound: zone === Zone.CARPENTRY ? { 
+      value: apiData.noise, 
+      unit: "dB", 
+      datereceive: apiData.noise_date ? new Date(apiData.noise_date) : null 
+    } : undefined,
   }
 }
 
@@ -68,7 +86,6 @@ export async function getLastDataByZone(zone: Zone): Promise<ZoneData> {
     }
     
     const apiData: ApiZoneResponse = await response.json()
-    console.log("API Data for zone", zone, ":", apiData)
     return mapApiResponseToZoneData(zone, apiData)
   } catch {
     showErrorToast(`Impossible de recuperer les donnees de la zone ${zone}`)
@@ -91,18 +108,18 @@ export async function getAvgTemperature(): Promise<AvgTemperatureResponse> {
   }
 }
 
-// Recupere la qualite d'air moyenne de toutes les zones
-export async function getAvgAirQuality(): Promise<AvgAirQualityResponse> {
+// Recupere l'humidite moyenne de toutes les zones
+export async function getAvgHumidity(): Promise<AvgHumidityResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/sensors/air-quality/average`)
+    const response = await fetch(`${API_BASE_URL}/sensors/humidity/average`)
     if (!response.ok) {
-      showErrorToast("Impossible de recuperer la qualite d'air moyenne")
-      return getDefaultAvgAirQuality()
+      showErrorToast("Impossible de recuperer l'humidite moyenne")
+      return getDefaultAvgHumidity()
     }
     return response.json()
   } catch {
-    showErrorToast("Impossible de recuperer la qualite d'air moyenne")
-    return getDefaultAvgAirQuality()
+    showErrorToast("Impossible de recuperer l'humidite moyenne")
+    return getDefaultAvgHumidity()
   }
 }
 
@@ -130,9 +147,9 @@ export async function getAllZonesData(): Promise<ZoneData[]> {
 
 // Recupere les donnees agregees pour la vue generale
 export async function getDashboardData() {
-  const [avgTemp, avgAirQuality, movementCount, zonesData] = await Promise.all([
+  const [avgTemp, avgHumidity, movementCount, zonesData] = await Promise.all([
     getAvgTemperature(),
-    getAvgAirQuality(),
+    getAvgHumidity(),
     getActualNbMovement(),
     getAllZonesData(),
   ])
@@ -140,7 +157,7 @@ export async function getDashboardData() {
   return {
     averages: {
       temperature: avgTemp.average,
-      airQuality: avgAirQuality.average,
+      humidity: avgHumidity.average,
       motionZones: movementCount.count,
       totalZones: movementCount.total,
     },
