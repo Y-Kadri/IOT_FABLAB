@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from app.routes.events import router as events_router
 from app.database import engine
 from sqlalchemy import text
-from app.models import Zone, Event
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
