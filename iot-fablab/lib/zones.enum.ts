@@ -1,19 +1,19 @@
 export enum Zone {
   CARPENTRY = "Carpentry",
   ELECTRONICS = "Electronics",
-  LASERS = "Lasers",
+  LASER = "Laser",
 }
 
 export const ZoneLabels: Record<Zone, string> = {
   [Zone.CARPENTRY]: "Menuiserie",
   [Zone.ELECTRONICS]: "Electronique & Soudure",
-  [Zone.LASERS]: "Decoupeuse Laser",
+  [Zone.LASER]: "Decoupeuse Laser",
 }
 
 export const ZoneSlugs: Record<Zone, string> = {
   [Zone.CARPENTRY]: "menuiserie",
   [Zone.ELECTRONICS]: "electronique-soudure",
-  [Zone.LASERS]: "decoupeuse-laser",
+  [Zone.LASER]: "decoupeuse-laser",
 }
 
 export function getZoneFromSlug(slug: string): Zone | null {
