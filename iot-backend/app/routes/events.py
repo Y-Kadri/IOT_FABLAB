@@ -81,13 +81,17 @@ async def create_event(
         "zone": payload.zone_name
     }
 
-def gas_to_ps(gas_value: float) -> int:
-    if gas_value <= 84:
-        return 1
-    elif gas_value <= 94:
-        return 2
+def gas_to_ps(gas_value: float, zone: str) -> int:
+    if zone == "Laser":
+        if gas_value < 45:
+            return 1
+        elif gas_value < 50:
+            return 2
     else:
-        return 3
+        if gas_value < 55:
+            return 1
+        elif gas_value < 60:
+            return 2
 
 def noise_to_ps(noise_value: float) -> int:
     if noise_value <= 57:
