@@ -82,9 +82,9 @@ async def create_event(
     }
 
 def gas_to_ps(gas_value: float) -> int:
-    if gas_value <= 3000:
+    if gas_value <= 10:
         return 1
-    elif gas_value <= 3600:
+    elif gas_value <= 60:
         return 2
     else:
         return 3
