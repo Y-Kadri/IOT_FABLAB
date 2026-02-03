@@ -82,13 +82,32 @@ async def create_event(
     }
 
 def gas_to_ps(gas_value: float) -> int:
-    if gas_value <= 10:
+    if gas_value <= 84:
         return 1
-    elif gas_value <= 60:
+    elif gas_value <= 94:
         return 2
     else:
         return 3
 
+def noise_to_ps(noise_value: float) -> int:
+    if noise_value <= 57:
+        return 1
+    elif noise_value <= 62:
+        return 2
+    else:
+        return 3
+    
+def temperature_to_ps(temperature_value: float) -> int:
+    if temperature_value <= 31:
+        return 1
+    else :
+        return 2
+  
+def humidity_to_ps(humidity_value: float) -> int:
+    if humidity_value <= 79:
+        return 1
+    else :
+        return 2
 
 @router.get("/last-by-zone/{zone_name}")
 async def get_last_event_by_zone(
@@ -108,6 +127,9 @@ async def get_last_event_by_zone(
         .order_by(TemperatureData.datereceive.desc())
         .limit(1)
     )).scalars().first()
+    
+    if temp is not None:
+        await LedManagementAPI.call_led_api(temperature_to_ps(temp.temperature))
 
     humidity = (await session.execute(
         select(HumidityData)
@@ -115,6 +137,9 @@ async def get_last_event_by_zone(
         .order_by(HumidityData.datereceive.desc())
         .limit(1)
     )).scalars().first()
+    
+    if humidity is not None:
+        await LedManagementAPI.call_led_api(humidity_to_ps(humidity.humidity))
 
     gas = (await session.execute(
         select(GasConcentration)
@@ -150,6 +175,9 @@ async def get_last_event_by_zone(
         .order_by(NoiseData.datereceive.desc())
         .limit(1)
     )).scalars().first()
+    
+    if noise is not None:
+        await LedManagementAPI.call_led_api(noise_to_ps(noise.noise))
 
     return {
         "zone": zone.name,
