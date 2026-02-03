@@ -114,6 +114,7 @@ async def get_last_event_by_zone(
     zone_name: ZoneEnum,
     session: AsyncSession = Depends(get_session)
 ):
+    ps = 0
     zone = (await session.execute(
         select(Zone).where(Zone.name == zone_name.value)
     )).scalars().first()
@@ -129,7 +130,7 @@ async def get_last_event_by_zone(
     )).scalars().first()
     
     if temp is not None:
-        await LedManagementAPI.call_led_api(temperature_to_ps(temp.temperature))
+        ps = temperature_to_ps(temp.temperature)
 
     humidity = (await session.execute(
         select(HumidityData)
@@ -139,7 +140,7 @@ async def get_last_event_by_zone(
     )).scalars().first()
     
     if humidity is not None:
-        await LedManagementAPI.call_led_api(humidity_to_ps(humidity.humidity))
+        ps = max(ps, humidity_to_ps(humidity.humidity))
 
     gas = (await session.execute(
         select(GasConcentration)
@@ -166,8 +167,7 @@ async def get_last_event_by_zone(
         movement_date = movements[0].datereceive
 
     if gas is not None:
-        await LedManagementAPI.call_led_api(gas_to_ps(gas.gasconcentration))
-
+        ps = max(ps, gas_to_ps(gas.gasconcentration))
 
     noise = (await session.execute(
         select(NoiseData)
@@ -177,7 +177,9 @@ async def get_last_event_by_zone(
     )).scalars().first()
     
     if noise is not None:
-        await LedManagementAPI.call_led_api(noise_to_ps(noise.noise))
+        ps = max(ps, noise_to_ps(noise.noise))
+
+    await LedManagementAPI.call_led_api(ps)
 
     return {
         "zone": zone.name,
