@@ -140,7 +140,8 @@ async def get_last_event_by_zone(
         movement = true_count >= 6
         movement_date = movements[0].datereceive
 
-    LedManagementAPI.call_led_api(gas_to_ps(gas.gasconcentration))
+    if (gas is not None):
+        LedManagementAPI.call_led_api(gas_to_ps(gas.gasconcentration))
 
     noise = (await session.execute(
         select(NoiseData)
