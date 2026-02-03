@@ -9,6 +9,7 @@ class LedManagementAPI:
 
     @staticmethod
     async def call_led_api(ps: int, timeout: float = DEFAULT_TIMEOUT) -> dict:
+        print(f"Calling LED API with ps={ps}")
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.post(
