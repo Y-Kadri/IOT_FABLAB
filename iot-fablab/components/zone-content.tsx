@@ -28,7 +28,7 @@ export function ZoneContent({ zone }: ZoneContentProps) {
     `zone-${zone}`,
     () => getLastDataByZone(zone),
     {
-      refreshInterval: 1000,
+      refreshInterval: 300,
       revalidateOnFocus: false,
     }
   )
