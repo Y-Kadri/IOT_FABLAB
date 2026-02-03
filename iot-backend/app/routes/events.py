@@ -14,6 +14,8 @@ from app.models import (
 from app.DTO.eventsDTO import EventCreate
 from app.DTO.eventStats import EventStats
 from sqlalchemy import func
+from app.services.led_management import LedManagementAPI
+
 
 router = APIRouter()
 
@@ -79,6 +81,14 @@ async def create_event(
         "zone": payload.zone_name
     }
 
+def gas_to_ps(gas_value: float) -> int:
+    if gas_value <= 3000:
+        return 1
+    elif gas_value <= 3600:
+        return 2
+    else:
+        return 3
+
 
 @router.get("/last-by-zone/{zone_name}")
 async def get_last_event_by_zone(
@@ -130,7 +140,7 @@ async def get_last_event_by_zone(
         movement = true_count >= 6
         movement_date = movements[0].datereceive
 
-
+    LedManagementAPI.call_led_api(gas_to_ps(gas.gasconcentration))
 
     noise = (await session.execute(
         select(NoiseData)
