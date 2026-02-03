@@ -20,10 +20,6 @@ router = APIRouter()
 
 router = APIRouter(prefix="/events", tags=["events"])
 
-
-router = APIRouter(prefix="/events", tags=["events"])
-
-
 @router.post("/")
 async def create_event(
     payload: EventCreate,
@@ -94,7 +90,7 @@ async def get_last_event_by_zone(
     )).scalars().first()
 
     if not zone:
-        raise HTTPException(404, "Zone not found")
+        raise HTTPException(500, "Zone not found")
 
     temp = (await session.execute(
         select(TemperatureData)
@@ -163,11 +159,28 @@ async def get_event_stats(session: AsyncSession = Depends(get_session)):
     )
     average_humidity = humidity_avg.scalar()
 
-    total_movement_res = await session.execute(
-        func.count(MovementData.id_movement)
+    last_movement_subquery = (
+        select(
+            MovementData.id_zone,
+            func.max(MovementData.datereceive).label("last_date")
+        )
+        .group_by(MovementData.id_zone)
+        .subquery()
     )
-    total_movements = total_movement_res.scalar()
-
+    
+    total_movements = (
+        await session.execute(
+            select(func.count())
+            .select_from(MovementData)
+            .join(
+                last_movement_subquery,
+                (MovementData.id_zone == last_movement_subquery.c.id_zone)
+                & (MovementData.datereceive == last_movement_subquery.c.last_date)
+            )
+            .where(MovementData.movement.is_(True))
+        )
+    ).scalar()
+    
     return EventStats(
         average_temperature=average_temperature,
         average_humidity=average_humidity,

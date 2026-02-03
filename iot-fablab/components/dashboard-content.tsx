@@ -27,9 +27,15 @@ export function DashboardContent() {
   const zones = Object.values(Zone)
 
   // Formatage avec gestion null/undefined -> "-"
-  const formatAverage = (value: number | null | undefined, decimals = 0): string => {
-    if (value === null || value === undefined) return "-"
-    return decimals > 0 ? value.toFixed(decimals) : value.toString()
+  const formatAverage = (
+    value: number | null | undefined,
+    decimals = 2
+  ): string => {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      return "-"
+    }
+
+    return value.toFixed(decimals)
   }
 
   return (
@@ -50,6 +56,7 @@ export function DashboardContent() {
         <SensorCard
           type="motion"
           value={averages.totalMovements}
+          unit="/3"
           label="Mouvements Detectes"
         />
       </section>
