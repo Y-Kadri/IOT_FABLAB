@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react"
 
 export function DashboardContent() {
   const { data, isLoading } = useSWR("dashboard", getDashboardData, {
-    refreshInterval: 5000,
+    refreshInterval: 1000,
     revalidateOnFocus: false,
   })
 

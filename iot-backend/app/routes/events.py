@@ -113,12 +113,24 @@ async def get_last_event_by_zone(
         .limit(1)
     )).scalars().first()
 
-    movement = (await session.execute(
-        select(MovementData)
-        .where(MovementData.id_zone == zone.id_zone)
-        .order_by(MovementData.datereceive.desc())
-        .limit(1)
-    )).scalars().first()
+    movements = (
+        await session.execute(
+            select(MovementData)
+            .where(MovementData.id_zone == zone.id_zone)
+            .order_by(MovementData.datereceive.desc())
+            .limit(10)
+        )
+    ).scalars().all()
+
+    movement = None
+    movement_date = None
+
+    if movements:
+        true_count = sum(1 for m in movements if m.movement)
+        movement = true_count >= 6
+        movement_date = movements[0].datereceive
+
+
 
     noise = (await session.execute(
         select(NoiseData)
@@ -139,12 +151,13 @@ async def get_last_event_by_zone(
         "gasconcentration": gas.gasconcentration if gas else None,
         "gas_date": gas.datereceive if gas else None,
 
-        "movement": movement.movement if movement else None,
-        "movement_date": movement.datereceive if movement else None,
+        "movement": movement,
+        "movement_date": movement_date,
 
         "noise": noise.noise if noise else None,
         "noise_date": noise.datereceive if noise else None,
     }
+
     
 
 @router.get("/stats", response_model=EventStats)
