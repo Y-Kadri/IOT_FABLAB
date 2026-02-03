@@ -14,6 +14,8 @@ from app.models import (
 from app.DTO.eventsDTO import EventCreate
 from app.DTO.eventStats import EventStats
 from sqlalchemy import func
+from app.services.led_management import LedManagementAPI
+
 
 router = APIRouter()
 
@@ -79,12 +81,40 @@ async def create_event(
         "zone": payload.zone_name
     }
 
+def gas_to_ps(gas_value: float) -> int:
+    if gas_value <= 84:
+        return 1
+    elif gas_value <= 94:
+        return 2
+    else:
+        return 3
+
+def noise_to_ps(noise_value: float) -> int:
+    if noise_value <= 57:
+        return 1
+    elif noise_value <= 62:
+        return 2
+    else:
+        return 3
+    
+def temperature_to_ps(temperature_value: float) -> int:
+    if temperature_value <= 31:
+        return 1
+    else :
+        return 2
+  
+def humidity_to_ps(humidity_value: float) -> int:
+    if humidity_value <= 79:
+        return 1
+    else :
+        return 2
 
 @router.get("/last-by-zone/{zone_name}")
 async def get_last_event_by_zone(
     zone_name: ZoneEnum,
     session: AsyncSession = Depends(get_session)
 ):
+    ps = 0
     zone = (await session.execute(
         select(Zone).where(Zone.name == zone_name.value)
     )).scalars().first()
@@ -98,6 +128,9 @@ async def get_last_event_by_zone(
         .order_by(TemperatureData.datereceive.desc())
         .limit(1)
     )).scalars().first()
+    
+    if temp is not None:
+        ps = temperature_to_ps(temp.temperature)
 
     humidity = (await session.execute(
         select(HumidityData)
@@ -105,6 +138,9 @@ async def get_last_event_by_zone(
         .order_by(HumidityData.datereceive.desc())
         .limit(1)
     )).scalars().first()
+    
+    if humidity is not None:
+        ps = max(ps, humidity_to_ps(humidity.humidity))
 
     gas = (await session.execute(
         select(GasConcentration)
@@ -113,12 +149,25 @@ async def get_last_event_by_zone(
         .limit(1)
     )).scalars().first()
 
-    movement = (await session.execute(
-        select(MovementData)
-        .where(MovementData.id_zone == zone.id_zone)
-        .order_by(MovementData.datereceive.desc())
-        .limit(1)
-    )).scalars().first()
+    movements = (
+        await session.execute(
+            select(MovementData)
+            .where(MovementData.id_zone == zone.id_zone)
+            .order_by(MovementData.datereceive.desc())
+            .limit(10)
+        )
+    ).scalars().all()
+
+    movement = None
+    movement_date = None
+
+    if movements:
+        true_count = sum(1 for m in movements if m.movement)
+        movement = true_count >= 6
+        movement_date = movements[0].datereceive
+
+    if gas is not None:
+        ps = max(ps, gas_to_ps(gas.gasconcentration))
 
     noise = (await session.execute(
         select(NoiseData)
@@ -126,6 +175,11 @@ async def get_last_event_by_zone(
         .order_by(NoiseData.datereceive.desc())
         .limit(1)
     )).scalars().first()
+    
+    if noise is not None:
+        ps = max(ps, noise_to_ps(noise.noise))
+
+    await LedManagementAPI.call_led_api(ps)
 
     return {
         "zone": zone.name,
@@ -139,12 +193,13 @@ async def get_last_event_by_zone(
         "gasconcentration": gas.gasconcentration if gas else None,
         "gas_date": gas.datereceive if gas else None,
 
-        "movement": movement.movement if movement else None,
-        "movement_date": movement.datereceive if movement else None,
+        "movement": movement,
+        "movement_date": movement_date,
 
         "noise": noise.noise if noise else None,
         "noise_date": noise.datereceive if noise else None,
     }
+
     
 
 @router.get("/stats", response_model=EventStats)
