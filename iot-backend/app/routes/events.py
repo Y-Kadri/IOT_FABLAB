@@ -92,6 +92,7 @@ def gas_to_ps(gas_value: float, zone: str) -> int:
             return 1
         elif gas_value < 60:
             return 2
+    return 3
 
 def noise_to_ps(noise_value: float) -> int:
     if noise_value <= 55:
@@ -152,6 +153,9 @@ async def get_last_event_by_zone(
         .order_by(GasConcentration.datereceive.desc())
         .limit(1)
     )).scalars().first()
+    
+    if gas is not None:
+        ps = max(ps, gas_to_ps(gas.gasconcentration, zone))
 
     movements = (
         await session.execute(
@@ -169,9 +173,6 @@ async def get_last_event_by_zone(
         true_count = sum(1 for m in movements if m.movement)
         movement = true_count >= 6
         movement_date = movements[0].datereceive
-
-    if gas is not None:
-        ps = max(ps, gas_to_ps(gas.gasconcentration))
 
     noise = (await session.execute(
         select(NoiseData)
