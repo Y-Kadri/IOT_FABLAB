@@ -75,8 +75,8 @@ class LedManagementAPI:
     @staticmethod
     def gas_to_ps(gas_value: float, zone: str) -> int:
         if zone == "Laser":
-            if gas_value < 45: return 1
-            elif gas_value < 50: return 2
+            if gas_value < 70: return 1
+            elif gas_value < 80: return 2
         else:
             if gas_value < 55: return 1
             elif gas_value < 60: return 2
@@ -84,14 +84,14 @@ class LedManagementAPI:
 
     @staticmethod
     def noise_to_ps(noise_value: float) -> int:
-        if noise_value <= 65: return 1
-        elif noise_value <= 80: return 2
+        if noise_value < 65: return 1
+        elif noise_value < 80: return 2
         return 3
 
     @staticmethod
     def temperature_to_ps(temperature_value: float) -> int:
-        return 1 if temperature_value <= 31 else 2
+        return 1 if temperature_value < 31 else 2
 
     @staticmethod
     def humidity_to_ps(humidity_value: float) -> int:
-        return 1 if humidity_value <= 79 else 2
+        return 1 if humidity_value < 79 else 2
