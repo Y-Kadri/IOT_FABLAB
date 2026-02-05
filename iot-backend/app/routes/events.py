@@ -60,14 +60,6 @@ async def get_last_event_by_zone(zone_name: ZoneEnum, session: AsyncSession = De
         gas_avg = sum(g.gasconcentration for g in gas_values) / len(gas_values)
         gas_date = gas_values[0].datereceive
 
-        class GasAvg:
-            pass
-
-        gas = GasAvg()
-        gas.gasconcentration = gas_avg
-        gas.datereceive = gas_date
-
-
     movements = (await session.execute(
         select(MovementData).where(MovementData.id_zone == zone.id_zone).order_by(MovementData.datereceive.desc()).limit(10)
     )).scalars().all()
@@ -92,8 +84,8 @@ async def get_last_event_by_zone(zone_name: ZoneEnum, session: AsyncSession = De
         "temperature_date": temp.datereceive if temp else None,
         "humidity": humidity.humidity if humidity else None,
         "humidity_date": humidity.datereceive if humidity else None,
-        "gasconcentration": gas.gasconcentration if gas else None,
-        "gas_date": gas.datereceive if gas else None,
+        "gasconcentration": gas_avg,
+        "gas_date": gas_date,
         "movement": movement,
         "movement_date": movement_date,
         "noise": noise.noise if noise else None,
