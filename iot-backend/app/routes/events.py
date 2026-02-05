@@ -46,9 +46,27 @@ async def get_last_event_by_zone(zone_name: ZoneEnum, session: AsyncSession = De
         select(HumidityData).where(HumidityData.id_zone == zone.id_zone).order_by(HumidityData.datereceive.desc()).limit(1)
     )).scalars().first()
 
-    gas = (await session.execute(
-        select(GasConcentration).where(GasConcentration.id_zone == zone.id_zone).order_by(GasConcentration.datereceive.desc()).limit(1)
-    )).scalars().first()
+    gas_values = (await session.execute(
+        select(GasConcentration)
+        .where(GasConcentration.id_zone == zone.id_zone)
+        .order_by(GasConcentration.datereceive.desc())
+        .limit(10)
+    )).scalars().all()
+
+    gas = None
+    gas_date = None
+
+    if gas_values:
+        gas_avg = sum(g.gasconcentration for g in gas_values) / len(gas_values)
+        gas_date = gas_values[0].datereceive
+
+        class GasAvg:
+            pass
+
+        gas = GasAvg()
+        gas.gasconcentration = gas_avg
+        gas.datereceive = gas_date
+
 
     movements = (await session.execute(
         select(MovementData).where(MovementData.id_zone == zone.id_zone).order_by(MovementData.datereceive.desc()).limit(10)
