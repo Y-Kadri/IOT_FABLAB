@@ -95,9 +95,9 @@ def gas_to_ps(gas_value: float, zone: str) -> int:
     return 3
 
 def noise_to_ps(noise_value: float) -> int:
-    if noise_value <= 55:
+    if noise_value <= 65:
         return 1
-    elif noise_value <= 70:
+    elif noise_value <= 80:
         return 2
     else:
         return 3

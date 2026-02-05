@@ -1,10 +1,9 @@
+import os
 import httpx
 from typing import Optional
 
 DEFAULT_TIMEOUT = 3.0
-API_BASE_URL = "http://10.92.218.246"
-
-
+API_BASE_URL = "http://" + os.getenv("API_BASE_URL")
 class LedManagementAPI:
 
     @staticmethod

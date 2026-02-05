@@ -78,7 +78,6 @@ export function ZoneContent({ zone }: ZoneContentProps) {
             <SensorCard
             type="air"
             value={formatValue(zoneData.airQuality.value)}
-            unit="%"
             label="Qualite de l'Air"
             datereceive={zoneData.airQuality.datereceive}
             />
