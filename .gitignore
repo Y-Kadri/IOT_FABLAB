@@ -177,8 +177,6 @@ yarn-error.log*
 next-env.d.ts
 
 ### Node ###
-# Logs
-logs
 *.log
 lerna-debug.log*
 
