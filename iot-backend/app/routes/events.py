@@ -55,6 +55,7 @@ async def get_last_event_by_zone(zone_name: ZoneEnum, session: AsyncSession = De
 
     gas = None
     gas_date = None
+    gas_avg = None
 
     if gas_values:
         gas_avg = sum(g.gasconcentration for g in gas_values) / len(gas_values)
