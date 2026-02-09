@@ -9,48 +9,33 @@ DEFAULT_TIMEOUT = 3.0
 API_BASE_URL = "http://" + os.getenv("API_BASE_URL")
 
 class LedManagementAPI:
-
+    
     @staticmethod
-    async def call_led_api(session: AsyncSession, timeout: float = DEFAULT_TIMEOUT) -> dict:
-        zones = (await session.execute(select(Zone))).scalars().all()
+    async def call_led_api(zone_metrics: list[dict], timeout: float = DEFAULT_TIMEOUT) -> dict:
         global_ps = 0
 
-        for zone in zones:
-            temp = (await session.execute(
-                select(TemperatureData)
-                .where(TemperatureData.id_zone == zone.id_zone)
-                .order_by(TemperatureData.datereceive.desc())
-                .limit(1)
-            )).scalars().first()
-            if temp:
-                global_ps = max(global_ps, LedManagementAPI.temperature_to_ps(temp.temperature))
+        for metrics in zone_metrics:
+            zone_name = metrics["zone"]
 
-            humidity = (await session.execute(
-                select(HumidityData)
-                .where(HumidityData.id_zone == zone.id_zone)
-                .order_by(HumidityData.datereceive.desc())
-                .limit(1)
-            )).scalars().first()
-            if humidity:
-                global_ps = max(global_ps, LedManagementAPI.humidity_to_ps(humidity.humidity))
+            if metrics.get("temperature") is not None:
+                global_ps = max(global_ps,
+                    LedManagementAPI.temperature_to_ps(metrics["temperature"])
+                )
 
-            gas = (await session.execute(
-                select(GasConcentration)
-                .where(GasConcentration.id_zone == zone.id_zone)
-                .order_by(GasConcentration.datereceive.desc())
-                .limit(1)
-            )).scalars().first()
-            if gas:
-                global_ps = max(global_ps, LedManagementAPI.gas_to_ps(gas.gasconcentration, zone.name))
+            if metrics.get("humidity") is not None:
+                global_ps = max(global_ps,
+                    LedManagementAPI.humidity_to_ps(metrics["humidity"])
+                )
 
-            noise = (await session.execute(
-                select(NoiseData)
-                .where(NoiseData.id_zone == zone.id_zone)
-                .order_by(NoiseData.datereceive.desc())
-                .limit(1)
-            )).scalars().first()
-            if noise:
-                global_ps = max(global_ps, LedManagementAPI.noise_to_ps(noise.noise))
+            if metrics.get("gas") is not None:
+                global_ps = max(global_ps,
+                    LedManagementAPI.gas_to_ps(metrics["gas"], zone_name)
+                )
+
+            if metrics.get("noise") is not None:
+                global_ps = max(global_ps,
+                    LedManagementAPI.noise_to_ps(metrics["noise"])
+                )
 
         logger.info(f"Calling LED API with ps={global_ps}")
 
@@ -71,6 +56,7 @@ class LedManagementAPI:
         except httpx.HTTPStatusError as e:
             logger.error(f"LED API error: status={e.response.status_code}, text={e.response.text}")
             return {"success": False, "error": "API_ERROR", "status": e.response.status_code, "details": e.response.text}
+
 
     @staticmethod
     def gas_to_ps(gas_value: float, zone: str) -> int:

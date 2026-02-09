@@ -72,11 +72,30 @@ async def get_last_event_by_zone(zone_name: ZoneEnum, session: AsyncSession = De
         movement = true_count >= 6
         movement_date = movements[0].datereceive
 
-    noise = (await session.execute(
-        select(NoiseData).where(NoiseData.id_zone == zone.id_zone).order_by(NoiseData.datereceive.desc()).limit(1)
-    )).scalars().first()
+    noise_values = (await session.execute(
+        select(NoiseData)
+        .where(NoiseData.id_zone == zone.id_zone)
+        .order_by(NoiseData.datereceive.desc())
+        .limit(5)
+    )).scalars().all()
 
-    led_result = await LedManagementAPI.call_led_api(session)
+    noise = None
+    noise_date = None
+
+    if noise_values:
+        noise = sum(n.noise for n in noise_values) / len(noise_values)
+        noise_date = noise_values[0].datereceive
+        
+        
+    zone_metrics = [{
+        "zone": zone.name,
+        "temperature": temp.temperature if temp else None,
+        "humidity": humidity.humidity if humidity else None,
+        "gas": gas_avg,
+        "noise": noise
+    }]
+
+    led_result = await LedManagementAPI.call_led_api(zone_metrics)
     logger.info(f"LED API called from GET /last-by-zone/{zone_name.value}: {led_result}")
 
     return {
@@ -89,37 +108,82 @@ async def get_last_event_by_zone(zone_name: ZoneEnum, session: AsyncSession = De
         "gas_date": gas_date,
         "movement": movement,
         "movement_date": movement_date,
-        "noise": noise.noise if noise else None,
-        "noise_date": noise.datereceive if noise else None,
+        "noise": noise,
+        "noise_date": noise_date,
     }
 
 
 @router.get("/stats", response_model=EventStats)
 async def get_event_stats(session: AsyncSession = Depends(get_session)):
-    temp_avg = await session.execute(func.avg(TemperatureData.temperature))
-    average_temperature = temp_avg.scalar()
 
-    humidity_avg = await session.execute(func.avg(HumidityData.humidity))
-    average_humidity = humidity_avg.scalar()
+    zones = (await session.execute(select(Zone))).scalars().all()
 
+    temperature_zone_avgs = []
+    humidity_zone_avgs = []
+
+    for zone in zones:
+
+        # ---- TEMPERATURE : moyenne des X dernières valeurs ----
+        temp_values = (await session.execute(
+            select(TemperatureData)
+            .where(TemperatureData.id_zone == zone.id_zone)
+            .order_by(TemperatureData.datereceive.desc())
+            .limit(1)
+        )).scalars().all()
+
+        if temp_values:
+            temp_avg = sum(t.temperature for t in temp_values) / len(temp_values)
+            temperature_zone_avgs.append(temp_avg)
+
+        # ---- HUMIDITY : moyenne des X dernières valeurs ----
+        humidity_values = (await session.execute(
+            select(HumidityData)
+            .where(HumidityData.id_zone == zone.id_zone)
+            .order_by(HumidityData.datereceive.desc())
+            .limit(1)
+        )).scalars().all()
+
+        if humidity_values:
+            humidity_avg = sum(h.humidity for h in humidity_values) / len(humidity_values)
+            humidity_zone_avgs.append(humidity_avg)
+
+    # moyenne des moyennes par zone
+    average_temperature = (
+        sum(temperature_zone_avgs) / len(temperature_zone_avgs)
+        if temperature_zone_avgs else None
+    )
+
+    average_humidity = (
+        sum(humidity_zone_avgs) / len(humidity_zone_avgs)
+        if humidity_zone_avgs else None
+    )
+
+    # mouvements (inchangé : dernier état par zone)
     last_movement_subquery = (
-        select(MovementData.id_zone, func.max(MovementData.datereceive).label("last_date"))
+        select(
+            MovementData.id_zone,
+            func.max(MovementData.datereceive).label("last_date")
+        )
         .group_by(MovementData.id_zone)
         .subquery()
     )
 
-    total_movements = (
-        await session.execute(
-            select(func.count())
-            .select_from(MovementData)
-            .join(
-                last_movement_subquery,
-                (MovementData.id_zone == last_movement_subquery.c.id_zone) & 
-                (MovementData.datereceive == last_movement_subquery.c.last_date)
-            )
-            .where(MovementData.movement.is_(True))
-        )
-    ).scalar()
+    total_movements = 0
+
+    for zone in zones:
+        movements = (await session.execute(
+            select(MovementData)
+            .where(MovementData.id_zone == zone.id_zone)
+            .order_by(MovementData.datereceive.desc())
+            .limit(10)
+        )).scalars().all()
+
+        if movements:
+            true_count = sum(1 for m in movements if m.movement)
+
+            if true_count >= 3:
+                total_movements += 1
+
 
     return EventStats(
         average_temperature=average_temperature,
