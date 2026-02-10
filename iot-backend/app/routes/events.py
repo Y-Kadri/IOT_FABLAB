@@ -158,16 +158,6 @@ async def get_event_stats(session: AsyncSession = Depends(get_session)):
         if humidity_zone_avgs else None
     )
 
-    # mouvements (inchangé : dernier état par zone)
-    last_movement_subquery = (
-        select(
-            MovementData.id_zone,
-            func.max(MovementData.datereceive).label("last_date")
-        )
-        .group_by(MovementData.id_zone)
-        .subquery()
-    )
-
     total_movements = 0
 
     for zone in zones:
