@@ -66,10 +66,9 @@ export function ZoneContent({ zone }: ZoneContentProps) {
     zone: string,
   ): number | undefined => {
     if (gasValue === null || gasValue === undefined) return undefined;
-
     if (zone === "Laser") {
-      if (gasValue < 45) return 1;
-      if (gasValue < 50) return 2;
+      if (gasValue < 70) return 1;
+      if (gasValue < 80) return 2;
       return 3;
     } else {
       if (gasValue < 55) return 1;
@@ -82,9 +81,8 @@ export function ZoneContent({ zone }: ZoneContentProps) {
     noiseValue: number | null | undefined,
   ): number | undefined => {
     if (noiseValue === null || noiseValue === undefined) return undefined;
-
-    if (noiseValue <= 55) return 1;
-    if (noiseValue <= 70) return 2;
+    if (noiseValue < 65) return 1;
+    if (noiseValue < 80) return 2;
     return 3;
   };
 
@@ -94,7 +92,7 @@ export function ZoneContent({ zone }: ZoneContentProps) {
     if (temperatureValue === null || temperatureValue === undefined)
       return undefined;
 
-    return temperatureValue <= 31 ? 1 : 2;
+    return temperatureValue < 31 ? 1 : 2;
   };
 
   const humidityToPs = (
@@ -102,7 +100,7 @@ export function ZoneContent({ zone }: ZoneContentProps) {
   ): number | undefined => {
     if (humidityValue === null || humidityValue === undefined) return undefined;
 
-    return humidityValue <= 79 ? 1 : 2;
+    return humidityValue < 79 ? 1 : 2;
   };
 
   return (
