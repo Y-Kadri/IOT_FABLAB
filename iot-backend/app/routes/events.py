@@ -95,8 +95,9 @@ async def get_last_event_by_zone(zone_name: ZoneEnum, session: AsyncSession = De
         "noise": noise
     }]
 
+    print("Zone metrics for LED API:", zone_metrics)
     led_result = await LedManagementAPI.call_led_api(zone_metrics)
-    logger.info(f"LED API called from GET /last-by-zone/{zone_name.value}: {led_result}")
+    logger.info(f"LED API called from GET : {led_result}")
 
     return {
         "zone": zone.name,

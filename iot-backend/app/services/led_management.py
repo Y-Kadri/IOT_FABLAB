@@ -6,7 +6,7 @@ from app.models import Zone, TemperatureData, GasConcentration, NoiseData, Humid
 from app.logs.logger_settings import logger
 
 DEFAULT_TIMEOUT = 3.0
-API_BASE_URL = "http://" + os.getenv("API_BASE_URL")
+API_BASE_URL = "http://" + os.getenv("API_BASE_URL") + "/json/state"
 
 class LedManagementAPI:
     
@@ -36,13 +36,13 @@ class LedManagementAPI:
                 global_ps = max(global_ps,
                     LedManagementAPI.noise_to_ps(metrics["noise"])
                 )
-
+                
         logger.info(f"Calling LED API with ps={global_ps}")
 
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.post(
-                    f"{API_BASE_URL}/json/state",
+                    API_BASE_URL,
                     json={"ps": global_ps}
                 )
                 response.raise_for_status()

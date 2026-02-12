@@ -62,6 +62,7 @@ export function SensorCard({
   const Icon = icons[type];
   const color = colors[type];
   const backgroundColor = getStatusColor(threshold ?? 0);
+  const maxGasContration = 200;
   // Gestion des valeurs null avec "-"
   let displayValue: string;
   if (value === null) {
@@ -70,6 +71,14 @@ export function SensorCard({
     displayValue = value ? "Oui" : "Non";
   } else {
     displayValue = String(value);
+  }
+
+  console.log("typeof val ", typeof value)
+  if (type === "air" && typeof value === "number") {
+    if (value > maxGasContration) {
+      value = maxGasContration;
+    }
+    displayValue = (value / maxGasContration * 100).toFixed(2);
   }
 
   return (
