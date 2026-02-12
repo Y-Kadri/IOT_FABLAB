@@ -12,7 +12,7 @@ services:
       - ./iot-backend/.env
     environment:
       DATABASE_URL: postgresql+asyncpg://iot_user:wQM6OL1qGsIfeu@192.168.137.11:5432/iot_db
-      API_BASE_URL: "192.168.137.11"
+      API_BASE_URL: "192.168.137.99"
     command: >
       bash -lc "pip install -r requirements.txt &&
       uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"

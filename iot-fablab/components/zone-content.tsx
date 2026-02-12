@@ -125,10 +125,11 @@ export function ZoneContent({ zone }: ZoneContentProps) {
         {hasntAirQuality && (
           <SensorCard
             type="air"
-            value={formatValue(zoneData.airQuality.value)}
-            label="Qualite de l'Air"
+            value={zoneData.airQuality.value}
+            label="Concentration de gaz nocifs"
             datereceive={zoneData.airQuality.datereceive}
             threshold={gasToPs(zoneData.airQuality.value, zone)}
+            unit="%"
           />
         )}
         <SensorCard

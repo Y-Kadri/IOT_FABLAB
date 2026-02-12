@@ -76,7 +76,7 @@ async def get_last_event_by_zone(zone_name: ZoneEnum, session: AsyncSession = De
         select(NoiseData)
         .where(NoiseData.id_zone == zone.id_zone)
         .order_by(NoiseData.datereceive.desc())
-        .limit(5)
+        .limit(3)
     )).scalars().all()
 
     noise = None
@@ -95,8 +95,9 @@ async def get_last_event_by_zone(zone_name: ZoneEnum, session: AsyncSession = De
         "noise": noise
     }]
 
+    print("Zone metrics for LED API:", zone_metrics)
     led_result = await LedManagementAPI.call_led_api(zone_metrics)
-    logger.info(f"LED API called from GET /last-by-zone/{zone_name.value}: {led_result}")
+    logger.info(f"LED API called from GET : {led_result}")
 
     return {
         "zone": zone.name,
@@ -162,16 +163,13 @@ async def get_event_stats(session: AsyncSession = Depends(get_session)):
 
     for zone in zones:
         movements = (await session.execute(
-            select(MovementData)
-            .where(MovementData.id_zone == zone.id_zone)
-            .order_by(MovementData.datereceive.desc())
-            .limit(10)
+            select(MovementData).where(MovementData.id_zone == zone.id_zone).order_by(MovementData.datereceive.desc()).limit(10)
         )).scalars().all()
 
         if movements:
             true_count = sum(1 for m in movements if m.movement)
 
-            if true_count >= 3:
+            if true_count >= 6:
                 total_movements += 1
 
 
