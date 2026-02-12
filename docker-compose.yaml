@@ -1,19 +1,6 @@
 version: "3.9"
 
 services:
-  postgres:
-    image: postgres:16
-    container_name: iot_postgres
-    restart: unless-stopped
-    ports:
-      - "5434:5432"
-    environment:
-      POSTGRES_DB: iot_db
-      POSTGRES_USER: iot_user
-      POSTGRES_PASSWORD: iot_password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   backend:
     image: python:3.11
     working_dir: /app
@@ -27,6 +14,7 @@ services:
       - ./iot-backend/.env
     environment:
       DATABASE_URL: postgresql+asyncpg://iot_user:iot_password@postgres:5432/iot_db
+      API_BASE_URL: "192.168.137.99"
     command: >
       bash -lc "pip install -r requirements.txt &&
       uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
