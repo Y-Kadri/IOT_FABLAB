@@ -162,16 +162,13 @@ async def get_event_stats(session: AsyncSession = Depends(get_session)):
 
     for zone in zones:
         movements = (await session.execute(
-            select(MovementData)
-            .where(MovementData.id_zone == zone.id_zone)
-            .order_by(MovementData.datereceive.desc())
-            .limit(10)
+            select(MovementData).where(MovementData.id_zone == zone.id_zone).order_by(MovementData.datereceive.desc()).limit(10)
         )).scalars().all()
 
         if movements:
             true_count = sum(1 for m in movements if m.movement)
 
-            if true_count >= 3:
+            if true_count >= 6:
                 total_movements += 1
 
 

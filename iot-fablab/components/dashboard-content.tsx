@@ -20,11 +20,19 @@ export function DashboardContent() {
       </div>
     )
   }
+  
+  console.log("Dashboard data:", data)
 
   // Valeurs par defaut si pas de donnees
   const averages = data?.averages ?? { temperature: null, humidity: null, totalMovements: 0 }
   const zonesData = data?.zones ?? []
   const zones = Object.values(Zone)
+
+  let nbMovement = 0;
+  zones.forEach((zone, index) => {
+    if (zonesData[index]?.movement?.detected) {
+      nbMovement++;}
+  })
 
   // Formatage avec gestion null/undefined -> "-"
   const formatAverage = (
@@ -55,7 +63,7 @@ export function DashboardContent() {
         />
         <SensorCard
           type="motion"
-          value={averages.totalMovements}
+          value={nbMovement> 0 ? nbMovement.toString() : "-"}
           unit="/3"
           label="Mouvements Detectes"
         />
@@ -68,7 +76,7 @@ export function DashboardContent() {
             <ZoneSummaryCard 
               key={zone} 
               zone={zone} 
-              data={zonesData[index]} 
+              data={zonesData[index]}
             />
           ))}
         </div>
