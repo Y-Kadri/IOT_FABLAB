@@ -1,5 +1,7 @@
+"use client";
 import { cn } from "@/lib/utils";
 import { Thermometer, Activity, Wind, Volume2, Droplets } from "lucide-react";
+import { useCallback, useEffect, useRef } from "react";
 
 interface SensorCardProps {
   type: "temperature" | "motion" | "air" | "decibels" | "humidity";
@@ -37,6 +39,18 @@ const colors = {
   humidity: "text-chart-1",
 };
 
+// Map: type -> { warning (seuil 2), alert (seuil 3) }
+const audioMap: Record<string, { warning: string; alert: string }> = {
+  air: {
+    warning: "/tresholdAlert/avertissementgaz.mp3",
+    alert: "/tresholdAlert/alertegaz.mp3",
+  },
+  decibels: {
+    warning: "/tresholdAlert/avertissementbruit.mp3",
+    alert: "/tresholdAlert/alertebruit.mp3",
+  }
+};
+
 const getStatusColor = (ps: number): string => {
   switch (ps) {
     case 1:
@@ -63,6 +77,7 @@ export function SensorCard({
   const color = colors[type];
   const backgroundColor = getStatusColor(threshold ?? 0);
   const maxGasContration = 200;
+
   // Gestion des valeurs null avec "-"
   let displayValue: string;
   if (value === null) {
@@ -73,13 +88,37 @@ export function SensorCard({
     displayValue = String(value);
   }
 
-  console.log("typeof val ", typeof value)
   if (type === "air" && typeof value === "number") {
     if (value > maxGasContration) {
       value = maxGasContration;
     }
     displayValue = (value / maxGasContration * 100).toFixed(2);
   }
+
+  const lastThreshold = useRef<number | null>(null);
+  const warningAudioRef = useRef<HTMLAudioElement>(null);
+  const alertAudioRef = useRef<HTMLAudioElement>(null);
+
+  const playAudio = useCallback((ref: React.RefObject<HTMLAudioElement | null>) => {
+    const audio = ref.current;
+    if (audio) {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    if (threshold == null) return;
+    if (lastThreshold.current === threshold) return;
+
+    lastThreshold.current = threshold;
+
+    if (threshold === 2) {
+      playAudio(warningAudioRef);
+    } else if (threshold === 3) {
+      playAudio(alertAudioRef);
+    }
+  }, [threshold, playAudio]);
 
   return (
     <div
@@ -139,6 +178,9 @@ export function SensorCard({
           Derniere emission: {formatLastEmission(datereceive)}
         </p>
       </div>
+
+      <audio ref={warningAudioRef} src={audioMap[type]?.warning} preload="auto" />
+      <audio ref={alertAudioRef} src={audioMap[type]?.alert} preload="auto" />
     </div>
   );
 }

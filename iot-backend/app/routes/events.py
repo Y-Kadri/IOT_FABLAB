@@ -76,7 +76,7 @@ async def get_last_event_by_zone(zone_name: ZoneEnum, session: AsyncSession = De
         select(NoiseData)
         .where(NoiseData.id_zone == zone.id_zone)
         .order_by(NoiseData.datereceive.desc())
-        .limit(5)
+        .limit(3)
     )).scalars().all()
 
     noise = None
