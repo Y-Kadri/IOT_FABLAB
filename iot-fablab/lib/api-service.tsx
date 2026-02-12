@@ -7,7 +7,7 @@ import type {
 import { toast } from "@/hooks/use-toast"
 
 // URL de base de l'API backend local
-const API_BASE_URL = "http://localhost:8000"
+const API_BASE_URL = "http://192.168.137.11:8000"
 
 // Valeurs par defaut quand l'API ne repond pas
 function getDefaultZoneData(zone: Zone): ZoneData {
