@@ -48,7 +48,7 @@ const audioMap: Record<string, { warning: string; alert: string }> = {
   decibels: {
     warning: "/tresholdAlert/avertissementbruit.mp3",
     alert: "/tresholdAlert/alertebruit.mp3",
-  }
+  },
 };
 
 const getStatusColor = (ps: number): string => {
@@ -92,20 +92,23 @@ export function SensorCard({
     if (value > maxGasContration) {
       value = maxGasContration;
     }
-    displayValue = (value / maxGasContration * 100).toFixed(2);
+    displayValue = ((value / maxGasContration) * 100).toFixed(2);
   }
 
   const lastThreshold = useRef<number | null>(null);
   const warningAudioRef = useRef<HTMLAudioElement>(null);
   const alertAudioRef = useRef<HTMLAudioElement>(null);
 
-  const playAudio = useCallback((ref: React.RefObject<HTMLAudioElement | null>) => {
-    const audio = ref.current;
-    if (audio) {
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
-    }
-  }, []);
+  const playAudio = useCallback(
+    (ref: React.RefObject<HTMLAudioElement | null>) => {
+      const audio = ref.current;
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (threshold == null) return;
@@ -179,7 +182,11 @@ export function SensorCard({
         </p>
       </div>
 
-      <audio ref={warningAudioRef} src={audioMap[type]?.warning} preload="auto" />
+      <audio
+        ref={warningAudioRef}
+        src={audioMap[type]?.warning}
+        preload="auto"
+      />
       <audio ref={alertAudioRef} src={audioMap[type]?.alert} preload="auto" />
     </div>
   );

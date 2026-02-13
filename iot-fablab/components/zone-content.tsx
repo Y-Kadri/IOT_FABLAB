@@ -53,7 +53,8 @@ export function ZoneContent({ zone }: ZoneContentProps) {
   // Formatage des valeurs avec gestion null -> "-"
   const formatValue = (value: number | null, decimals = 0): string => {
     if (value === null) return "-";
-    return decimals > 0 ? value.toFixed(decimals) : value.toString();
+    console.log(value.toFixed(0), "    ", value.toString());
+    return decimals >= 0 ? value.toFixed(decimals) : value.toString();
   };
 
   const formatDate = (date: Date | null): string => {
@@ -143,7 +144,7 @@ export function ZoneContent({ zone }: ZoneContentProps) {
         {hasSound && zoneData.sound && (
           <SensorCard
             type="decibels"
-            value={formatValue(zoneData.sound.value)}
+            value={formatValue(zoneData.sound.value, 0)}
             unit="dB"
             label="Niveau Sonore"
             datereceive={zoneData.sound.datereceive}
